@@ -7,6 +7,9 @@ In order to run the script, run the following command:
 
     go run cmd/main.go -dbcreds=user:password -dbname=sqlcoin -blockfile=/path/to/sqlcoin/testfiles/blk00004.dat
 ## Roadmap
+
+**Needs performance upgrade. Database inserts batching.**
+
 - ~~Add extra startup parameter for database credentials~~ :heavy_check_mark:
 - Code cleanup
 - Comment all the things!
