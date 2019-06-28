@@ -1,9 +1,11 @@
 # SQLcoin
 Tool writen in Go that parses the bitcoin blockchain to MySQL.
 ## How to run
-In order to run it, run the following command:
+Make sure you've executed the SQL create statement found [HERE](sqldiagram/createsqlcoin3.sql).
 
-    go run cmd/main.go -blockfile /path/to/sqlcoin/testfiles/blk00004.dat
+In order to run the script, run the following command:
+
+    go run cmd/main.go -dbcreds=user:password -dbname=sqlcoin -blockfile=/path/to/sqlcoin/testfiles/blk00004.dat
 ## Roadmap
 - ~~Add extra startup parameter for database credentials~~ :heavy_check_mark:
 - Code cleanup
