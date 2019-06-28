@@ -5,15 +5,15 @@ In order to run it, run the following command:
 
     go run cmd/main.go -blockfile /path/to/sqlcoin/testfiles/blk00004.dat
 ## Roadmap
-- Add extra startup parameter for database credentials
+- ~~Add extra startup parameter for database credentials~~
 - Code cleanup
 - Comment all the things!
 - Write tests
 - Write benchmarks
-- Convert ScriptPubKey to address
-- Create database schema
-    - Write service that prepares data for SQL insert
-    - Make MySQL connection
+- ~~Convert ScriptPubKey to address~~
+- ~~Create database schema~~
+    - ~~Write service that prepares data for SQL insert~~
+    - ~~Make MySQL connection~~ :heavy_check_mark:
 ## Future add ons
 Might distribute the following in different repos
 - UTXO age distribution tool
