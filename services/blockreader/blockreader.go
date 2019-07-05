@@ -9,11 +9,13 @@ import (
 )
 
 /*
-StartReading ...
+StartReading is the function that runs the entire script basically.
+It loops through a blk-file and creates blocks.
+At the end of every block it is sent to the database.
 */
 func StartReading(file custommodels.File, dbCreds, dbName string) {
 	for {
-		// Reads the magic number and the block size, but discards it
+		// Reads the magic number and the block size, but discards them
 		readBlockInfo(file)
 
 		// Reads the block header from the file
@@ -34,13 +36,16 @@ func StartReading(file custommodels.File, dbCreds, dbName string) {
 	}
 }
 
+/*
+readBlockInfo reads the magic number and block size, then discards them
+*/
 func readBlockInfo(file custommodels.File) {
 	file.ReadAndDiscard(custommodels.Magic)
 	file.ReadAndDiscard(custommodels.BlockSize)
 }
 
 /*
-ReadBlockHeader ...
+ReadBlockHeader does what it does and returns the block's header
 */
 func ReadBlockHeader(file custommodels.File) wire.BlockHeader {
 	return wire.BlockHeader{
@@ -53,9 +58,16 @@ func ReadBlockHeader(file custommodels.File) wire.BlockHeader {
 	}
 }
 
+/*
+readTxs is looping through all txs of a block.
+It requires the file and the total number of txs of a block.
+Return an array of txs, as described by btcd.wire.
+*/
 func readTxs(file custommodels.File, totalTxs uint64) []*wire.MsgTx {
+	// Create an empty slice of txs to which we'll append txs
 	var txSlice []*wire.MsgTx
 
+	// Loop through the block's txs
 	for counter := uint64(0); counter < totalTxs; counter++ {
 		originTx, segwit := initNewTx()
 

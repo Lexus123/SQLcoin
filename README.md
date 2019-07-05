@@ -19,7 +19,11 @@ In order to run the script, run the following command:
 - ~~Create database schema~~ :heavy_check_mark:
     - ~~Write service that prepares data for SQL insert~~ :heavy_check_mark:
     - ~~Make MySQL connection~~ :heavy_check_mark:
+    - Switch to PostgreSQL
+    - Change schema to [THIS](https://github.com/Blockchair/Blockchair.Support/blob/master/SQL.md#-database-schema)
+    - Refactor database inserts
 ## Future add ons
 Might distribute the following in different repos
-- UTXO age distribution tool
-- Wallet identifier tool
+- UTXO and coin age distribution
+- Wallet identifier
+- How much bitcoin of tx X is used in tx Y
