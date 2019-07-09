@@ -13,7 +13,10 @@ StartReading is the function that runs the entire script basically.
 It loops through a blk-file and creates blocks.
 At the end of every block it is sent to the database.
 */
-func StartReading(file custommodels.File, dbCreds, dbName string) {
+func StartReading(file custommodels.File) {
+	// Create an instance of the DB
+	db := databaser.MakeConnection()
+
 	for {
 		// Reads the magic number and the block size, but discards them
 		readBlockInfo(file)
@@ -32,7 +35,7 @@ func StartReading(file custommodels.File, dbCreds, dbName string) {
 		block.Transactions = readTxs(file, totalTxs)
 
 		// Makes the database insert once the entire block is read
-		databaser.MakeInsert(block, dbCreds, dbName)
+		databaser.MakeInsert(block, db)
 	}
 }
 

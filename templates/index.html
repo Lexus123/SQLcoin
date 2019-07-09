@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>SQLcoin Server</title>
+</head>
+
+<body>
+    <p>{{.PageTitle}}<p>
+    <form enctype="multipart/form-data" action="/analyse" method="post">
+        <input type="file" name="analysefile" />
+        <input type="submit" value="Convert to SQL statement">
+    </form>
+</body>
+
+</html>

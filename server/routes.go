@@ -27,15 +27,27 @@ var routes = Routes{
 		Index,
 	},
 	Route{
+		"Analyse",
+		"POST",
+		"/analyse",
+		Analyse,
+	},
+	Route{
+		"MainIndex",
+		"GET",
+		"/main",
+		MainIndex,
+	},
+	Route{
 		"BlockIndex",
 		"GET",
-		"/blocks",
+		"/api/blocks",
 		BlockIndex,
 	},
 	Route{
 		"BlockShow",
 		"GET",
-		"/block/{blockId}",
+		"/api/block/{blockId}",
 		BlockShow,
 	},
 }

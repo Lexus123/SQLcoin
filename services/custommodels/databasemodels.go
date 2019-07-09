@@ -1,23 +1,28 @@
 package custommodels
 
+import "github.com/btcsuite/btcd/chaincfg/chainhash"
+
 type DbBlock struct {
-	Hash      string
-	PrevHash  string
-	Merkle    string
+	Hash      chainhash.Hash
+	PrevHash  [32]byte
+	Merkle    [32]byte
 	Timestamp int64
 }
 
 type DbTx struct {
-	Hash        string
-	BlockHeight int64
+	Hash    [32]byte
+	BlockId int64
 }
 
 type DbOutput struct {
-	TxHash  string
-	TxIndex int
-	Amount  int64
-	Address string
-	Used    uint64
+	BlockId         int64
+	TxHash          [32]byte
+	Index           int
+	Address         string
+	Amount          int64
+	SpendingBlockId int64
+	SpendingTxHash  [32]byte
+	SpendingIndex   int
 }
 
 type DbInput struct {

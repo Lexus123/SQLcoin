@@ -10,7 +10,8 @@ import (
 OpenFile ...
 */
 func OpenFile(path string) custommodels.File {
-	blk, err := os.Open(path)
+	fullpath := "./testfiles/" + path
+	blk, err := os.Open(fullpath)
 	customBlk := custommodels.File{
 		blk,
 	}

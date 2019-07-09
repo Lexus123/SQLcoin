@@ -2,80 +2,93 @@ package databaser
 
 import (
 	"database/sql"
+	"fmt"
 	"sqlcoin/services/custommodels"
 	"sqlcoin/services/errorchecker"
-	"strings"
 
 	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/txscript"
 	"github.com/btcsuite/btcd/wire"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 )
 
-func createLogin(dbCreds string, dbName string) string {
-	var login strings.Builder
+const (
+	host     = "localhost"
+	port     = 5432
+	username = "postgres"
+	password = ""
+	database = "sqlcoin"
+)
 
-	login.WriteString(dbCreds)
-	login.WriteString("@/")
-	login.WriteString(dbName)
-
-	return login.String()
+/*
+MakeConnection ...
+*/
+func MakeConnection() *sql.DB {
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, username, password, database)
+	db, err := sql.Open("postgres", psqlInfo)
+	errorchecker.CheckFileError(err)
+	err = db.Ping()
+	errorchecker.CheckFileError(err)
+	return db
 }
 
 /*
 MakeInsert ...
 */
-func MakeInsert(block *wire.MsgBlock, dbCreds, dbName string) {
-	login := createLogin(dbCreds, dbName)
-	db, err := sql.Open("mysql", login)
-	errorchecker.CheckFileError(err)
-	defer db.Close()
-
+func MakeInsert(block *wire.MsgBlock, db *sql.DB) {
 	dbBlock := prepareBlock(block)
-	lastBlockID := insertBlock(dbBlock, db)
+	insertBlock(dbBlock, db)
 
-	insertTxs(block.Transactions, lastBlockID, db)
+	// insertTxs(block.Transactions, lastBlockID, db)
 }
 
 func prepareBlock(block *wire.MsgBlock) custommodels.DbBlock {
 	return custommodels.DbBlock{
-		Hash:      block.Header.BlockHash().String(),
-		PrevHash:  block.Header.PrevBlock.String(),
-		Merkle:    block.Header.MerkleRoot.String(),
+		Hash:      block.Header.BlockHash(),
+		PrevHash:  block.Header.PrevBlock,
+		Merkle:    block.Header.MerkleRoot,
 		Timestamp: block.Header.Timestamp.Unix(),
 	}
 }
 
-func insertBlock(dbBlock custommodels.DbBlock, db *sql.DB) int64 {
-	insertStatement, err := db.Prepare("INSERT INTO blocks (height, hash, prevHash, merkle, timestamp) VALUES (?,?,?,?,?)")
+func insertBlock(dbBlock custommodels.DbBlock, db *sql.DB) {
+	sqlStatement := `
+		INSERT INTO blocks (hash)
+		VALUES (` + fmt.Sprint(dbBlock.Hash) + `)`
+	_, err := db.Exec(sqlStatement)
 	errorchecker.CheckFileError(err)
-
-	result, err := insertStatement.Exec(nil, dbBlock.Hash, dbBlock.PrevHash, dbBlock.Merkle, dbBlock.Timestamp)
-	errorchecker.CheckFileError(err)
-
-	lastBlockID, _ := result.LastInsertId()
-	return lastBlockID
 }
 
 func insertTxs(txs []*wire.MsgTx, lastBlockID int64, db *sql.DB) {
-	for _, tx := range txs {
-		dbTx := custommodels.DbTx{
-			Hash:        tx.TxHash().String(),
-			BlockHeight: lastBlockID,
-		}
+	// txn, _ := db.Begin()
 
-		insertStatement, err := db.Prepare("INSERT INTO txs (txID, hash, blockHeight) VALUES (?,?,?)")
-		errorchecker.CheckFileError(err)
+	// txStatement, _ := txn.Prepare(pq.CopyIn("txs", "id", "hash", "block_id"))
+	// outputStatement, _ := txn.Prepare(pq.CopyIn("outputs", "id", "block_id", "tx_hash", "index", "address", "amount", "spending_block_id", "spending_tx_hash", "spending_index"))
 
-		_, err = insertStatement.Exec(nil, dbTx.Hash, dbTx.BlockHeight)
-		errorchecker.CheckFileError(err)
+	// for _, tx := range txs {
+	// 	dbTx := custommodels.DbTx{
+	// 		Hash:    tx.TxHash(),
+	// 		BlockId: lastBlockID,
+	// 	}
 
-		insertOutputs(tx.TxOut, dbTx.Hash, db)
-		insertInputs(tx.TxIn, dbTx.Hash, db)
-	}
+	// 	_, err := txStatement.Exec(nil, dbTx.Hash, dbTx.BlockId)
+	// 	errorchecker.CheckFileError(err)
+
+	// 	insertOutputs(tx.TxOut, lastBlockID, dbTx.Hash, outputStatement)
+	// 	// updateOutputs(tx.TxIn, dbTx.Hash, db)
+	// }
+
+	// _, err := txStatement.Exec()
+	// errorchecker.CheckFileError(err)
+
+	// err = txStatement.Close()
+	// errorchecker.CheckFileError(err)
+
+	// err = txn.Commit()
+	// errorchecker.CheckFileError(err)
 }
 
-func insertOutputs(outputs []*wire.TxOut, txHash string, db *sql.DB) {
+func insertOutputs(outputs []*wire.TxOut, lastBlockID int64, txHash [32]byte, outputStatement *sql.Stmt) {
 	for i, output := range outputs {
 		_, addresses, _, err := txscript.ExtractPkScriptAddrs(output.PkScript, &chaincfg.MainNetParams)
 		errorchecker.CheckFileError(err)
@@ -85,22 +98,28 @@ func insertOutputs(outputs []*wire.TxOut, txHash string, db *sql.DB) {
 		}
 
 		dbOutput := custommodels.DbOutput{
-			TxHash:  txHash,
-			TxIndex: i,
-			Amount:  output.Value,
-			Address: address,
-			Used:    0,
+			BlockId:         lastBlockID,
+			TxHash:          txHash,
+			Index:           i,
+			Address:         address,
+			Amount:          output.Value,
+			SpendingBlockId: 0,
+			SpendingTxHash:  txHash,
+			SpendingIndex:   0,
 		}
 
-		insertStatement, err := db.Prepare("INSERT INTO outputs (outID, txHash, txIndex, amount, address, used) VALUES (?,?,?,?,?,?)")
-		errorchecker.CheckFileError(err)
-
-		_, err = insertStatement.Exec(nil, dbOutput.TxHash, dbOutput.TxIndex, dbOutput.Amount, dbOutput.Address, 0)
+		_, err = outputStatement.Exec(nil, dbOutput.BlockId, dbOutput.TxHash, dbOutput.Index, dbOutput.Address, dbOutput.Amount, dbOutput.SpendingBlockId, dbOutput.SpendingTxHash, dbOutput.SpendingIndex)
 		errorchecker.CheckFileError(err)
 	}
+
+	_, err := outputStatement.Exec()
+	errorchecker.CheckFileError(err)
+
+	err = outputStatement.Close()
+	errorchecker.CheckFileError(err)
 }
 
-func insertInputs(inputs []*wire.TxIn, txHash string, db *sql.DB) {
+func updateOutputs(inputs []*wire.TxIn, txHash string, db *sql.DB) {
 	for _, input := range inputs {
 		dbInput := custommodels.DbInput{
 			TxHash:      txHash,
