@@ -1,6 +1,8 @@
 package blockreader
 
 import (
+	"io"
+
 	"sqlcoin/services/custommodels"
 	"sqlcoin/services/databaser"
 
@@ -17,9 +19,15 @@ func StartReading(file custommodels.File) {
 	// Create an instance of the DB
 	db := databaser.MakeConnection()
 
+	var allBlocks []*wire.MsgBlock
+
 	for {
 		// Reads the magic number and the block size, but discards them
-		readBlockInfo(file)
+		err := readBlockInfo(file)
+
+		if err == io.EOF {
+			break
+		}
 
 		// Reads the block header from the file
 		header := ReadBlockHeader(file)
@@ -35,16 +43,23 @@ func StartReading(file custommodels.File) {
 		block.Transactions = readTxs(file, totalTxs)
 
 		// Makes the database insert once the entire block is read
-		databaser.DigestBlock(block, db)
+		// databaser.DigestBlock(block, db)
+		allBlocks = append(allBlocks, block)
 	}
+
+	databaser.DigestBlock(allBlocks, db)
 }
 
 /*
 readBlockInfo reads the magic number and block size, then discards them
 */
-func readBlockInfo(file custommodels.File) {
-	file.ReadAndDiscard(custommodels.Magic)
+func readBlockInfo(file custommodels.File) error {
+	err := file.ReadAndDiscard(custommodels.Magic)
+	if err != nil {
+		return err
+	}
 	file.ReadAndDiscard(custommodels.BlockSize)
+	return err
 }
 
 /*

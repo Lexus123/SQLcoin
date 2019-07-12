@@ -36,54 +36,63 @@ func MakeConnection() *sql.DB {
 /*
 DigestBlock ...
 */
-func DigestBlock(block *wire.MsgBlock, db *sql.DB) {
-	var allUpdates string
-	var lastTx, lastOutput bool
-	var outputsLen int
+func DigestBlock(allBlocks []*wire.MsgBlock, db *sql.DB) {
+	// var allUpdates string
+	var lastBlock, lastTx, lastOutput bool
+	var txsLen, outputsLen int
 
 	allInserts := `INSERT INTO outputs (block_hash, tx_hash, index, address, amount, timestamp) VALUES `
 
-	blockHash := block.Header.BlockHash()
-	timestamp := block.Header.Timestamp.Unix()
-	txsLen := len(block.Transactions)
+	blocksLen := len(allBlocks)
 
-	for i, tx := range block.Transactions {
+	for bIndex, block := range allBlocks {
+		blockHash := block.Header.BlockHash()
+		timestamp := block.Header.Timestamp.Unix()
 
-		txHash := tx.TxHash()
-
-		if i+1 == txsLen {
-			lastTx = true
-			outputsLen = len(tx.TxOut)
+		if bIndex+1 == blocksLen {
+			lastBlock = true
+			txsLen = len(block.Transactions)
 		}
 
-		for index, output := range tx.TxOut {
-			if lastTx && index+1 == outputsLen {
-				lastOutput = true
+		for tIndex, tx := range block.Transactions {
+
+			txHash := tx.TxHash()
+
+			if lastBlock && tIndex+1 == txsLen {
+				lastTx = true
+				outputsLen = len(tx.TxOut)
 			}
 
-			allInserts += createInsert(output, index, blockHash, txHash, timestamp, lastOutput)
+			for oIndex, output := range tx.TxOut {
+				if lastTx && oIndex+1 == outputsLen {
+					lastOutput = true
+				}
+
+				allInserts += createInsert(output, oIndex, blockHash, txHash, timestamp, lastOutput)
+			}
+
+			// for index, input := range tx.TxIn {
+			// 	if input.PreviousOutPoint.Hash != [32]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} && input.PreviousOutPoint.Index != 4294967295 {
+			// 		allUpdates += createUpdate(input, index, blockHash, txHash, timestamp)
+			// 	}
+			// }
 		}
 
-		for index, input := range tx.TxIn {
-			if input.PreviousOutPoint.Hash != [32]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} && input.PreviousOutPoint.Index != 4294967295 {
-				allUpdates += createUpdate(input, index, blockHash, txHash, timestamp)
-			}
-		}
 	}
 
 	fmt.Println("===============INSERTS===================")
 	fmt.Println(allInserts)
 	// HIER IS DE STATEMENT VOOR ALLE INSERTS READY
 
-	fmt.Println("===============UPDATES===================")
-	fmt.Println(allUpdates)
+	// fmt.Println("===============UPDATES===================")
+	// fmt.Println(allUpdates)
 	// HIER IS DE STATEMENT VOOR ALLE UPDATES READY
 
 	_, err := db.Exec(allInserts)
 	errorchecker.CheckFileError(err)
 
-	_, err = db.Exec(allUpdates)
-	errorchecker.CheckFileError(err)
+	// _, err = db.Exec(allUpdates)
+	// errorchecker.CheckFileError(err)
 }
 
 func createInsert(output *wire.TxOut, index int, blockHash, txHash chainhash.Hash, timestamp int64, lastOutput bool) string {
