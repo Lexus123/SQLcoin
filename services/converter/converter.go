@@ -64,7 +64,7 @@ func ConvertAddress(output *wire.TxOut) string {
 	errorchecker.CheckFileError(err)
 	var address string
 	if len(addresses) > 0 {
-		address = addresses[0].String()
+		address = addresses[0].EncodeAddress()
 	}
 	return address
 }

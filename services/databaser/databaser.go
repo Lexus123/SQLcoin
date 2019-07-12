@@ -37,21 +37,37 @@ func MakeConnection() *sql.DB {
 DigestBlock ...
 */
 func DigestBlock(block *wire.MsgBlock, db *sql.DB) {
-	var allInserts, allUpdates string
+	var allUpdates string
+	var lastTx, lastOutput bool
+	var outputsLen int
+
+	allInserts := `INSERT INTO outputs (block_hash, tx_hash, index, address, amount, timestamp) VALUES `
 
 	blockHash := block.Header.BlockHash()
 	timestamp := block.Header.Timestamp.Unix()
+	txsLen := len(block.Transactions)
 
-	for _, tx := range block.Transactions {
+	for i, tx := range block.Transactions {
 
 		txHash := tx.TxHash()
 
+		if i+1 == txsLen {
+			lastTx = true
+			outputsLen = len(tx.TxOut)
+		}
+
 		for index, output := range tx.TxOut {
-			allInserts += createInsert(output, index, blockHash, txHash, timestamp)
+			if lastTx && index+1 == outputsLen {
+				lastOutput = true
+			}
+
+			allInserts += createInsert(output, index, blockHash, txHash, timestamp, lastOutput)
 		}
 
 		for index, input := range tx.TxIn {
-			allUpdates += createUpdate(input, index, blockHash, txHash, timestamp)
+			if input.PreviousOutPoint.Hash != [32]byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} && input.PreviousOutPoint.Index != 4294967295 {
+				allUpdates += createUpdate(input, index, blockHash, txHash, timestamp)
+			}
 		}
 	}
 
@@ -70,25 +86,30 @@ func DigestBlock(block *wire.MsgBlock, db *sql.DB) {
 	errorchecker.CheckFileError(err)
 }
 
-func createInsert(output *wire.TxOut, index int, blockHash, txHash chainhash.Hash, timestamp int64) string {
-	insertStatement := `INSERT INTO outputs (block_hash, tx_hash, index, address, amount, timestamp) VALUES (
-	` + blockHash.String() + `,
-	` + txHash.String() + `,
+func createInsert(output *wire.TxOut, index int, blockHash, txHash chainhash.Hash, timestamp int64, lastOutput bool) string {
+	insertStatement := `('` + blockHash.String() + `',
+	'` + txHash.String() + `',
 	` + strconv.Itoa(index) + `,
-	` + converter.ConvertAddress(output) + `, 
+	'` + converter.ConvertAddress(output) + `', 
 	` + strconv.FormatInt(output.Value, 10) + `,
-	` + strconv.FormatInt(timestamp, 10) + `);`
+	` + strconv.FormatInt(timestamp, 10) + `)`
+
+	if lastOutput {
+		insertStatement += "; "
+	} else {
+		insertStatement += ", "
+	}
 
 	return insertStatement
 }
 
 func createUpdate(input *wire.TxIn, index int, blockHash, txHash chainhash.Hash, timestamp int64) string {
 	updateStatement := `UPDATE outputs SET (spending_block_hash, spending_tx_hash, spending_index, spending_timestamp) = (
-	` + blockHash.String() + `,
-	` + txHash.String() + `,
+	'` + blockHash.String() + `',
+	'` + txHash.String() + `',
 	` + strconv.Itoa(index) + `,
 	` + strconv.FormatInt(timestamp, 10) + `) WHERE tx_hash =
-	` + input.PreviousOutPoint.Hash.String() + ` AND index =
+	'` + input.PreviousOutPoint.Hash.String() + `' AND index =
 	` + strconv.FormatUint(uint64(input.PreviousOutPoint.Index), 10) + `;`
 
 	return updateStatement
