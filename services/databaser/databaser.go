@@ -2,6 +2,7 @@ package databaser
 
 import (
 	"database/sql"
+	"fmt"
 	"sqlcoin/services/custommodels"
 	"sqlcoin/services/errorchecker"
 	"strings"
@@ -25,16 +26,19 @@ func createLogin(dbCreds string, dbName string) string {
 /*
 MakeInsert ...
 */
-func MakeInsert(block *wire.MsgBlock, dbCreds, dbName string) {
-	login := createLogin(dbCreds, dbName)
-	db, err := sql.Open("mysql", login)
-	errorchecker.CheckFileError(err)
-	defer db.Close()
+func MakeInsert(block *wire.MsgBlock) {
+	for _, tx := range block.Transactions {
+		insertOutputs(tx.TxOut)
+	}
+	// login := createLogin(dbCreds, dbName)
+	// db, err := sql.Open("mysql", login)
+	// errorchecker.CheckFileError(err)
+	// defer db.Close()
 
-	dbBlock := prepareBlock(block)
-	lastBlockID := insertBlock(dbBlock, db)
+	// dbBlock := prepareBlock(block)
+	// lastBlockID := insertBlock(dbBlock, db)
 
-	insertTxs(block.Transactions, lastBlockID, db)
+	// insertTxs(block.Transactions, lastBlockID, db)
 }
 
 func prepareBlock(block *wire.MsgBlock) custommodels.DbBlock {
@@ -70,33 +74,30 @@ func insertTxs(txs []*wire.MsgTx, lastBlockID int64, db *sql.DB) {
 		_, err = insertStatement.Exec(nil, dbTx.Hash, dbTx.BlockHeight)
 		errorchecker.CheckFileError(err)
 
-		insertOutputs(tx.TxOut, dbTx.Hash, db)
-		insertInputs(tx.TxIn, dbTx.Hash, db)
+		// insertOutputs(tx.TxOut, dbTx.Hash, db)
+		// insertInputs(tx.TxIn, dbTx.Hash, db)
 	}
 }
 
-func insertOutputs(outputs []*wire.TxOut, txHash string, db *sql.DB) {
+func insertOutputs(outputs []*wire.TxOut) {
 	for i, output := range outputs {
 		_, addresses, _, err := txscript.ExtractPkScriptAddrs(output.PkScript, &chaincfg.MainNetParams)
+		fmt.Println(addresses)
 		errorchecker.CheckFileError(err)
 		var address string
 		if len(addresses) > 0 {
-			address = addresses[0].String()
+			address = addresses[0].EncodeAddress()
+
 		}
 
 		dbOutput := custommodels.DbOutput{
-			TxHash:  txHash,
 			TxIndex: i,
 			Amount:  output.Value,
 			Address: address,
 			Used:    0,
 		}
 
-		insertStatement, err := db.Prepare("INSERT INTO outputs (outID, txHash, txIndex, amount, address, used) VALUES (?,?,?,?,?,?)")
-		errorchecker.CheckFileError(err)
-
-		_, err = insertStatement.Exec(nil, dbOutput.TxHash, dbOutput.TxIndex, dbOutput.Amount, dbOutput.Address, 0)
-		errorchecker.CheckFileError(err)
+		fmt.Println(dbOutput)
 	}
 }
 
