@@ -4,7 +4,12 @@ import (
 	"encoding/binary"
 	"time"
 
+	"sqlcoin/services/errorchecker"
+
+	"github.com/btcsuite/btcd/chaincfg"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
+	"github.com/btcsuite/btcd/txscript"
+	"github.com/btcsuite/btcd/wire"
 )
 
 /*
@@ -49,4 +54,17 @@ ConvertBlockHeaderTimestamp receives
 */
 func ConvertBlockHeaderTimestamp(buffer []byte) time.Time {
 	return time.Unix(int64(binary.LittleEndian.Uint32(buffer)), 0)
+}
+
+/*
+ConvertAddress receives
+*/
+func ConvertAddress(output *wire.TxOut) string {
+	_, addresses, _, err := txscript.ExtractPkScriptAddrs(output.PkScript, &chaincfg.MainNetParams)
+	errorchecker.CheckFileError(err)
+	var address string
+	if len(addresses) > 0 {
+		address = addresses[0].String()
+	}
+	return address
 }

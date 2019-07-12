@@ -35,7 +35,7 @@ func StartReading(file custommodels.File) {
 		block.Transactions = readTxs(file, totalTxs)
 
 		// Makes the database insert once the entire block is read
-		databaser.MakeInsert(block, db)
+		databaser.DigestBlock(block, db)
 	}
 }
 
