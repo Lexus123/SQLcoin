@@ -31,7 +31,7 @@
         </SQLField>
         <SQLField>
             <name><![CDATA[index]]></name>
-            <type><![CDATA[INTEGER]]></type>
+            <type><![CDATA[INT8]]></type>
             <uid><![CDATA[99E7B12A-62F6-4107-8382-A2B0BAD1C973]]></uid>
         </SQLField>
         <SQLField>
@@ -41,7 +41,7 @@
         </SQLField>
         <SQLField>
             <name><![CDATA[amount]]></name>
-            <type><![CDATA[BIGINT]]></type>
+            <type><![CDATA[INT8]]></type>
             <uid><![CDATA[66B78267-933E-4CEF-BF05-0635B2DD2FB9]]></uid>
         </SQLField>
         <SQLField>
@@ -83,7 +83,7 @@
         </SQLField>
         <SQLField>
             <name><![CDATA[index]]></name>
-            <type><![CDATA[INT4]]></type>
+            <type><![CDATA[INT8]]></type>
             <uid><![CDATA[5E8F4483-A751-4FB0-891F-0F47EA8AD11E]]></uid>
         </SQLField>
         <SQLField>
@@ -98,7 +98,7 @@
         </SQLField>
         <SQLField>
             <name><![CDATA[prev_out_index]]></name>
-            <type><![CDATA[INT4]]></type>
+            <type><![CDATA[INT8]]></type>
             <uid><![CDATA[D6481639-38F7-47A8-8128-B090ED9C169D]]></uid>
         </SQLField>
         <ui.treeExpanded><![CDATA[1]]></ui.treeExpanded>

@@ -10,18 +10,18 @@ In order to run the script, run the following command:
 
 **Needs performance upgrade. Database inserts batching.**
 
-- ~~Add extra startup parameter for database credentials~~ :heavy_check_mark:
+- ~~Add extra startup parameter for database credentials~~
 - Code cleanup
 - Comment all the things!
 - Write tests
 - Write benchmarks
-- ~~Convert ScriptPubKey to address~~ :heavy_check_mark:
-- ~~Create database schema~~ :heavy_check_mark:
-    - ~~Write service that prepares data for SQL insert~~ :heavy_check_mark:
-    - ~~Make MySQL connection~~ :heavy_check_mark:
-    - Switch to PostgreSQL
-    - Change schema to [THIS](https://github.com/Blockchair/Blockchair.Support/blob/master/SQL.md#-database-schema)
-    - Refactor database inserts
+- ~~Convert ScriptPubKey to address~~ 
+- ~~Create database schema~~ 
+    - ~~Write service that prepares data for SQL insert~~ 
+    - ~~Make MySQL connection~~ 
+    - ~~Switch to PostgreSQL~~
+    - ~~Change schema to [THIS](https://github.com/Blockchair/Blockchair.Support/blob/master/SQL.md#-database-schema)~~
+    - ~~Refactor database inserts~~
 ## Future add ons
 Might distribute the following in different repos
 - UTXO and coin age distribution
