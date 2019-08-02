@@ -39,15 +39,41 @@ var routes = Routes{
 		MainIndex,
 	},
 	Route{
-		"BlockIndex",
+		"InputsIndex",
 		"GET",
-		"/api/blocks",
-		BlockIndex,
+		"/inputs",
+		InputsIndex,
 	},
 	Route{
-		"BlockShow",
+		"OutputsIndex",
 		"GET",
-		"/api/block/{blockId}",
-		BlockShow,
+		"/outputs",
+		OutputsIndex,
+	},
+	Route{
+		"GetSingleOutput",
+		"GET",
+		"/output/{output}",
+		GetSingleOutput,
+	},
+	Route{
+		"GetSingleTx",
+		"GET",
+		"/tx/{txHash}",
+		GetSingleTx,
+	},
+
+	// API routes from here on
+	Route{
+		"CountInputs",
+		"GET",
+		"/api/inputs/count",
+		CountInputs,
+	},
+	Route{
+		"GetAllInputs",
+		"GET",
+		"/api/inputs",
+		GetAllInputs,
 	},
 }

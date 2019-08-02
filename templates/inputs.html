@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- <link rel="stylesheet" type="text/css" href="/templates/all.css"> -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <style>
+        .card:not(:last-child) {
+            margin-bottom: 20px;
+        }
+    </style>
+    <title>SQLcoin Server</title>
+</head>
+
+<body>
+    <div class="container">
+        <p>{{.PageTitle}}</p>
+
+        {{range .Inputs}}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{.TxHash}}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Timestamp</h6>
+                <p class="card-text">{{.Timestamp}}</p>
+                <h6 class="card-subtitle mb-2 text-muted">Block Hash</h6>
+                <p class="card-text">{{.BlockHash}}</p>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</body>
+
+</html>
