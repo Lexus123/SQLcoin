@@ -21,7 +21,7 @@ type Input struct {
 	TxHash       string `json:"txHash"`
 	Index        int    `json:"index"`
 	Timestamp    int    `json:"timestamp"`
-	PrevOutHash  string    `json:"prevOutHash"`
+	PrevOutHash  string `json:"prevOutHash"`
 	PrevOutIndex int    `json:"prevOutIndex"`
 }
 
@@ -53,6 +53,7 @@ type Block struct {
 Tx is a very simple struct
 */
 type Tx struct {
+	TxHash  string   `json:"hash"`
 	Inputs  []Input  `json:"inputs"`
 	Outputs []Output `json:"outputs"`
 }
@@ -174,6 +175,8 @@ func GetSingleTx(txParam string) Tx {
 		tx.Outputs = append(tx.Outputs, output)
 	}
 
+	tx.TxHash = txParam
+
 	return tx
 }
 
@@ -210,7 +213,7 @@ func GetSingleBlocks(blockId string) Block {
 	var block Block
 	id, _ := strconv.Atoi(blockId)
 
-	sqlStatement := `SELECT * FROM blocks WHERE height=?`
+	sqlStatement := `SELECT * FROM blocks WHERE height = ?`
 
 	// Open up our database connection.
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, username, database)

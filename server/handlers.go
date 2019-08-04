@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	// "fmt"
 	"html/template"
 	"net/http"
 	"time"
@@ -15,31 +14,50 @@ import (
 	"github.com/gorilla/mux"
 )
 
+/*
+IndexData ...
+*/
 type IndexData struct {
 	PageTitle string
 }
 
+/*
+InputsData ...
+*/
 type InputsData struct {
 	PageTitle string
 	Inputs    []databaser.Input
 }
 
+/*
+OutputsData ...
+*/
 type OutputsData struct {
 	PageTitle string
 	Outputs   []databaser.Output
 }
 
+/*
+OutputData ...
+*/
 type OutputData struct {
 	PageTitle string
 	Output    databaser.Output
 }
 
+/*
+TxData ...
+*/
 type TxData struct {
 	PageTitle string
 	Inputs    []databaser.Input
 	Outputs   []databaser.Output
+	TxHash    string
 }
 
+/*
+Index ...
+*/
 func Index(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("templates/index.html"))
 
@@ -50,6 +68,9 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
+/*
+Analyse ...
+*/
 func Analyse(w http.ResponseWriter, r *http.Request) {
 	_, handler, err := r.FormFile("analysefile")
 	errorchecker.CheckFileError(err)
@@ -58,6 +79,10 @@ func Analyse(w http.ResponseWriter, r *http.Request) {
 }
 
 // With templates
+
+/*
+MainIndex ...
+*/
 func MainIndex(w http.ResponseWriter, r *http.Request) {
 	data := IndexData{
 		PageTitle: "Main page",
@@ -67,6 +92,9 @@ func MainIndex(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
+/*
+InputsIndex ...
+*/
 func InputsIndex(w http.ResponseWriter, r *http.Request) {
 	inputs := databaser.GetAllInputs()
 
@@ -79,6 +107,9 @@ func InputsIndex(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
+/*
+OutputsIndex ...
+*/
 func OutputsIndex(w http.ResponseWriter, r *http.Request) {
 	outputs := databaser.GetAllOutputs()
 
@@ -91,6 +122,9 @@ func OutputsIndex(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
+/*
+GetSingleOutput ...
+*/
 func GetSingleOutput(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	output := databaser.GetSingleOutput(vars["output"])
@@ -109,6 +143,9 @@ func GetSingleOutput(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
+/*
+GetSingleTx ...
+*/
 func GetSingleTx(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	txHash := databaser.GetSingleTx(vars["txHash"])
@@ -117,11 +154,13 @@ func GetSingleTx(w http.ResponseWriter, r *http.Request) {
 		PageTitle: "Single Tx Page",
 		Inputs:    txHash.Inputs,
 		Outputs:   txHash.Outputs,
+		TxHash:    txHash.TxHash,
 	}
 
 	var funcMap = template.FuncMap{
 		"satsToWhole":     satsToWhole,
 		"timestampToTime": timestampToTime,
+		"totalBtc":        totalBtc,
 	}
 
 	tmpl := template.Must(template.New("single.html").Funcs(funcMap).ParseFiles("templates/tx/single.html"))
@@ -136,7 +175,24 @@ func timestampToTime(timestamp int64) time.Time {
 	return time.Unix(timestamp, 0).UTC()
 }
 
-// API
+func totalBtc(arg interface{}) float64 {
+	var totalBtc int64
+
+	switch arg := arg.(type) {
+	case []databaser.Output:
+		for _, output := range arg {
+			totalBtc += output.Amount
+		}
+	}
+
+	return satsToWhole(totalBtc)
+}
+
+// API Handlers
+
+/*
+GetAllInputs ...
+*/
 func GetAllInputs(w http.ResponseWriter, r *http.Request) {
 	inputs := databaser.GetAllInputs()
 
@@ -147,6 +203,9 @@ func GetAllInputs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+/*
+CountInputs ...
+*/
 func CountInputs(w http.ResponseWriter, r *http.Request) {
 	countInputs := databaser.CountInputs()
 

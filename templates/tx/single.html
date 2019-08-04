@@ -11,19 +11,25 @@
 
 <body>
     <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/tx">Transactions</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{.TxHash}}</li>
+            </ol>
+        </nav>
         <p>{{.PageTitle}}</p>
 
         <div class="row">
             <div class="col-6">
                 <h5>Inputs</h5>
                 {{range .Inputs}}
-                    {{.PrevOutHash}}:{{.PrevOutIndex}}
+                    <p style="word-break: break-all;">{{.PrevOutHash}}:{{.PrevOutIndex}}</p>
                 {{end}}
             </div>
             <div class="col-6">
-                <h5>Outputs</h5>
+                <h5>Outputs ({{totalBtc .Outputs}} BTC)</h5>
                 {{range .Outputs}}
-                    {{.Address}}:{{satsToWhole .Amount}}
+                    <p style="word-break: break-all;">{{.Address}} : {{satsToWhole .Amount}} BTC</p>
                 {{end}}
             </div>
         </div>
