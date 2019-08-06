@@ -69,7 +69,7 @@ func GetAllInputs() []Input {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, username, database)
 	db, err := sql.Open("postgres", psqlInfo)
 
-	// if there is an error opening the connection, handle it
+	// If there is an error opening the connection, handle it
 	errorchecker.CheckFileError(err)
 	defer db.Close()
 
@@ -97,7 +97,7 @@ func GetAllOutputs() []Output {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, username, database)
 	db, err := sql.Open("postgres", psqlInfo)
 
-	// if there is an error opening the connection, handle it
+	// If there is an error opening the connection, handle it
 	errorchecker.CheckFileError(err)
 	defer db.Close()
 
@@ -114,6 +114,35 @@ func GetAllOutputs() []Output {
 }
 
 /*
+GetAllTxs ...
+*/
+func GetAllTxs() []Tx {
+	var tx Tx
+	var txs []Tx
+	var output Output
+
+	// Open up our database connection.
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, username, database)
+	db, err := sql.Open("postgres", psqlInfo)
+
+	// If there is an error opening the connection, handle it
+	errorchecker.CheckFileError(err)
+	defer db.Close()
+
+	// Execute the query
+	rows, err := db.Query("SELECT tx_hash, sum(amount) FROM outputs WHERE block_hash = '00000000000011906b491883ab0f16f0e690b133ca860b199b775c3cf6581c21' GROUP BY tx_hash")
+	errorchecker.CheckFileError(err)
+
+	for rows.Next() {
+		err = rows.Scan(&output.TxHash, &output.Amount)
+		tx.Outputs = append(tx.Outputs, output)
+		txs = append(txs, tx)
+	}
+
+	return txs
+}
+
+/*
 GetSingleOutput ...
 */
 func GetSingleOutput(outputParam string) Output {
@@ -125,7 +154,7 @@ func GetSingleOutput(outputParam string) Output {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, username, database)
 	db, err := sql.Open("postgres", psqlInfo)
 
-	// if there is an error opening the connection, handle it
+	// If there is an error opening the connection, handle it
 	errorchecker.CheckFileError(err)
 	defer db.Close()
 
@@ -190,7 +219,7 @@ func CountInputs() int {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, username, database)
 	db, err := sql.Open("postgres", psqlInfo)
 
-	// if there is an error opening the connection, handle it
+	// If there is an error opening the connection, handle it
 	errorchecker.CheckFileError(err)
 	defer db.Close()
 
@@ -219,7 +248,7 @@ func GetSingleBlocks(blockId string) Block {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, username, database)
 	db, err := sql.Open("postgres", psqlInfo)
 
-	// if there is an error opening the connection, handle it
+	// If there is an error opening the connection, handle it
 	errorchecker.CheckFileError(err)
 	defer db.Close()
 

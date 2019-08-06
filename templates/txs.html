@@ -10,12 +10,16 @@
 </head>
 
 <body>
-    <p>{{.PageTitle}}<p>
-    <form enctype="multipart/form-data" action="/analyse" method="post">
-        <input type="file" name="analysefile" />
-        <input type="submit" value="Convert to SQL statement">
-        <a href="/outputs">Outputs</a>
-    </form>
+    <div class="container">
+        <p>{{.PageTitle}}</p>
+        <div class="list-group">
+            {{range .Txs}}
+                {{range .Outputs}}
+                    <div class="list-group-item list-group-item-action">{{.TxHash}}:{{.Amount}}</div>
+                {{end}}
+            {{end}}
+        </div>
+    </div>
 </body>
 
 </html>

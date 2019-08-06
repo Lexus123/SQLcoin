@@ -56,6 +56,14 @@ type TxData struct {
 }
 
 /*
+TxsData ...
+*/
+type TxsData struct {
+	PageTitle string
+	Txs       []databaser.Tx
+}
+
+/*
 Index ...
 */
 func Index(w http.ResponseWriter, r *http.Request) {
@@ -119,6 +127,21 @@ func OutputsIndex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmpl := template.Must(template.ParseFiles("templates/outputs.html"))
+	tmpl.Execute(w, data)
+}
+
+/*
+TxsIndex ...
+*/
+func TxsIndex(w http.ResponseWriter, r *http.Request) {
+	txs := databaser.GetAllTxs()
+
+	data := TxsData{
+		PageTitle: "Transactions Page",
+		Txs:       txs,
+	}
+
+	tmpl := template.Must(template.ParseFiles("templates/txs.html"))
 	tmpl.Execute(w, data)
 }
 

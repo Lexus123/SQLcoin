@@ -51,6 +51,12 @@ var routes = Routes{
 		OutputsIndex,
 	},
 	Route{
+		"TxsIndex",
+		"GET",
+		"/txs",
+		TxsIndex,
+	},
+	Route{
 		"GetSingleOutput",
 		"GET",
 		"/output/{output}",
